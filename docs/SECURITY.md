@@ -1,32 +1,40 @@
 # 🔐 Modelo de Segurança e Ameaças
 
-Diretrizes de segurança para a suíte de ferramentas do repositório `unix`.
+Diretrizes de segurança para a suíte de ferramentas do repositório `unix` (`rtdo` e `rtgo`).
 
 ---
 
 ## 🎯 Modelo de Ameaças
 
-Utilitários que operam com bit SUID root ativo (`4755`) constituem pontos de máxima criticidade em sistemas Unix, pois qualquer vulnerabilidade de corrupção de memória ou herança de ambiente pode levar a escalonamento local de privilégios (*LPE*).
+Utilitários que operam com bit SUID root ativo constituem pontos de máxima criticidade em sistemas Unix. O modelo de segurança adota uma postura de defesa em camadas (*defense-in-depth*).
 
-### 1. Injeção de Ambiente (`LD_PRELOAD`, `LD_LIBRARY_PATH`)
-- **Ameaça:** Usuários não privilegiados podem configurar variáveis de ambiente que forçam a carga de bibliotecas compartilhadas arbitrárias durante a execução do comando alvo como root.
-- **Mitigação:** `msud` limpa explicitamente `LD_PRELOAD`, `LD_LIBRARY_PATH` e `IFS` via `unsetenv()`, e garante que `PATH` aponte para um caminho de sistema seguro caso esteja vazio.
+### 1. Restrição de Execução ao Grupo Administrativo (`wheel`)
+- **Ameaça:** Usuários comuns não privilegiados ou contas de serviço (`nobody`, `www-data`) tentando executar binários SUID para escalar privilégios.
+- **Mitigação em 2 Camadas:**
+  - **Camada 1 (Kernel/VFS):** Permissões `chmod 4750 root:wheel`. O bit de execução para `others` é explicitamente desabilitado. Contas fora de `wheel` são barradas antes do `execve` do sistema operacional.
+  - **Camada 2 (Runtime C):** Checagem no código-fonte via `getgroups()`. Mesmo que as permissões do arquivo sejam corrompidas acidentalmente para `4755`, a execução aborta imediatamente se o chamador não pertencer ao grupo `wheel`.
 
-### 2. Vazamento de Segredos em Memória
-- **Ameaça:** Despejos de memória (*core dumps*) ou inspeção residual de pilha podem expor a senha digitada em texto puro.
-- **Mitigação:** Imediatamente após a comparação de hash, a função `explicit_bzero()` sobrescreve todo o buffer da senha, prevenindo que o compilador elimine a limpeza por otimização (*Dead Store Elimination*).
+### 2. Injeção de Ambiente (`LD_PRELOAD`, `LD_LIBRARY_PATH`)
+- **Ameaça:** Usuários configurando variáveis que forçam a injeção de bibliotecas compartilhadas arbitrárias durante a execução do comando alvo como root.
+- **Mitigação:** Ambos os utilitários removem explicitamente `LD_PRELOAD`, `LD_LIBRARY_PATH` e `IFS` via `unsetenv()`, e garantem `PATH` seguro do sistema caso esteja vazio ou nulo.
 
-### 3. Ataques de Tempo e Contas Desativadas
-- **Ameaça:** Tentativa de autenticação em contas de sistema (`daemon`, `bin`) ou desativadas (`!` ou `*` no shadow).
-- **Mitigação:** A função `conta_bloqueada()` rejeita antecipadamente qualquer conta cujo hash não represente uma credencial válida antes de invocar algoritmos criptográficos.
+### 3. Retenção de Grupos Secundários
+- **Ameaça:** O processo root herdar grupos secundários do usuário chamador, permitindo privilégios incongruentes ou vazamento de dados.
+- **Mitigação:** Chamada obrigatória a `initgroups("root", 0)` antes de `setgid(0)` e `setuid(0)`.
+
+### 4. Vazamento de Senhas em Memória (`rtdo`)
+- **Ameaça:** Despejos de memória (*core dumps*) ou inspeção residual da pilha expondo senhas em texto puro.
+- **Mitigação:** `explicit_bzero()` sobrescreve todo o buffer da senha imediatamente após a comparação criptográfica.
 
 ---
 
 ## 📋 Checklist de Auditoria Contínua
 
-- [x] Ausência de `malloc`/`free` em caminhos críticos de autenticação.
+- [x] Permissão `chmod 4750 root:wheel` nos alvos de instalação.
+- [x] Validação programática de `wheel`/`root` com fallback seguro para `sudo`.
+- [x] Ausência de alocações dinâmicas desnecessárias (`malloc`/`free`).
 - [x] Checagem de limites estritos em todas as operações de string.
-- [x] Restauração de manipuladores de sinal e atributos da TTY.
+- [x] Restauração de manipuladores de sinal e atributos da TTY em `rtdo`.
 - [x] Invocação de `initgroups` para isolamento de privilégios.
 - [x] Compilação limpa sob `-Wall -Wextra -Werror -pedantic`.
 - [x] Validação com AddressSanitizer e UndefinedBehaviorSanitizer no CI.

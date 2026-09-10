@@ -1,0 +1,54 @@
+.TH RTDO 1 "September 2026" "unix" "User Commands"
+.SH NAME
+rtdo \- Root Do: secure privilege executor with password authentication restricted to wheel
+.SH SYNOPSIS
+.B rtdo
+.I command
+[\fIarguments\fR...]
+.SH DESCRIPTION
+.B rtdo
+is a secure, minimalist, POSIX-compliant privilege elevation utility designed as a lightweight alternative to
+.BR sudo (8)
+and
+.BR doas (1).
+Execution is strictly restricted to members of the
+.B wheel
+administrative group.
+.PP
+When invoked,
+.B rtdo
+verifies that the caller belongs to the
+.B wheel
+group (or is root), prompts for the caller's password directly on the controlling terminal (\fI/dev/tty\fR) with echo disabled, validates the password against the system shadow database, cleanses the execution environment, drops supplementary groups, assumes root credentials, and executes the specified command via
+.BR execvp (3).
+.PP
+If the terminal input is interrupted (e.g. with \fBSIGINT\fR or \fBSIGQUIT\fR), terminal echo attributes are cleanly restored before exit.
+.SH SECURITY CONSIDERATIONS
+.IP \(bu 2
+.B Group Restriction:
+The binary permissions must be set to \fIchmod 4750\fR owned by \fIroot:wheel\fR. In addition, an internal runtime verification ensures only members of group \fIwheel\fR can execute it.
+.IP \(bu 2
+.B Memory Sanitization:
+Passwords in memory are immediately cleared using
+.BR explicit_bzero (3)
+after cryptographic comparison.
+.IP \(bu 2
+.B Environment Sanitization:
+Dangerous variables such as \fBLD_PRELOAD\fR, \fBLD_LIBRARY_PATH\fR, and \fBIFS\fR are stripped, and a secure \fBPATH\fR is enforced if unset.
+.SH EXIT STATUS
+.TP
+.B 0
+Successful completion of the executed command.
+.TP
+.B 1
+Authentication failure, access denied, or invalid arguments.
+.TP
+.B 130
+Interrupted by user signal (\fBSIGINT\fR).
+.SH SEE ALSO
+.BR rtgo (1),
+.BR doas (1),
+.BR sudo (8),
+.BR crypt (3)
+.SH AUTHORS
+Gabriel Frigo <gabriel.frigo4@gmail.com>

@@ -12,6 +12,9 @@
    - Antes de assumir a identidade final via `setuid(0)` e `setgid(0)`, é OBRIGATÓRIO invocar `initgroups("root", 0)` ou zerar grupos suplementares para impedir que privilégios de grupos do chamador (ex: docker, wheel) vazem para o processo de destino.
 3. **Falha Fechada (Fail-Closed):**
    - Se qualquer chamada de verificação de senha, banco de dados ou alteração de privilégio falhar, o processo deve abortar imediatamente com código de erro não-zero e limpar segredos residuais da memória.
+4. **Restrição Mandatória a Grupo Administrativo:**
+   - Binários executores de privilégio devem ter permissões restritas ao grupo administrativo (`chmod 4750 root:wheel`).
+   - O código-fonte C deve obrigatoriamente validar o pertencimento a `wheel` (ou `root`) antes de qualquer ação.
 
 ---
 

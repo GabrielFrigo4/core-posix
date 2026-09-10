@@ -2,7 +2,7 @@
 .SILENT:
 MAKEFLAGS += --no-print-directory -s
 
-SUBDIRS = msud
+SUBDIRS = rtdo rtgo
 
 all:
 	for dir in $(SUBDIRS); do \

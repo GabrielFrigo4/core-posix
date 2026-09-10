@@ -15,50 +15,56 @@
 
 ## 📖 Visão Geral
 
-O projeto **unix** reúne utilitários de sistema projetados sob a filosofia clássica do Unix: ferramentas focadas, com base de código reduzida, livres de dependências externas inchadas, fáceis de auditar e prontas para rodar em ambientes Linux e FreeBSD.
+O projeto **unix** reúne utilitários de sistema concebidos sob a filosofia clássica do Unix: ferramentas focadas, com base de código enxuta, livres de dependências externas inchadas, fáceis de auditar e estritamente aderentes ao padrão POSIX.
 
-O utilitário inaugural da suíte é o **`msud`** (*Minimal SUID Doas/Sudo*), uma alternativa ultra-leve e segura aos tradicionais executores de privilégios.
+A suíte introduz dois executores de privilégios de alto desempenho com controle rígido de acesso:
 
----
-
-## 🧩 Utilitários Disponíveis
-
-| Utilitário | Descrição | Linhas de Código | Plataformas |
-| :--- | :--- | :--- | :--- |
-| [**`msud`**](msud/) | Executor de comandos com privilégio elevado (alternativa a `sudo`/`doas`) | ~180 LOC | Linux, FreeBSD |
+- **`rtdo`** (*Root Do*): Executor de comandos com privilégio elevado mediante autenticação de senha via `/dev/tty`. Restrito ao grupo **`wheel`**.
+- **`rtgo`** (*Root Go*): Executor imediato sem senha (*passwordless*), de latência ultrabaixa (< 1ms), com elevação segura restrita exclusivamente ao grupo **`wheel`**.
 
 ---
 
-## 🏛️ Arquitetura do `msud`
+## 🧩 Utilitários da Suíte
+
+| Utilitário | Descrição | Autenticação | Controle de Acesso | Permissões |
+| :--- | :--- | :--- | :--- | :--- |
+| [**`rtdo`**](rtdo/) | Alternativa leve ao `sudo`/`doas` | Senha da TTY (`crypt`) | `root` ou grupo `wheel` | `4750 root:wheel` |
+| [**`rtgo`**](rtgo/) | Elevação imediata e sem senha | Nenhuma (*Zero Password*) | `root` ou grupo `wheel` | `4750 root:wheel` |
+
+---
+
+## 🛡️ Modelo de Segurança em Duas Camadas
+
+Ambos os utilitários operam sob um modelo de **defesa em profundidade** contra acessos não autorizados:
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Usuário
-    participant TTY as /dev/tty
-    participant Msud as msud (SUID Root)
-    participant Shadow as /etc/shadow
-    participant Kernel as Linux Kernel
-
-    User->>Msud: Executa: msud <comando> [args...]
-    Msud->>Shadow: Valida identidade real e obtém hash
-    Msud->>TTY: Desabilita ECHO e solicita senha
-    User->>TTY: Digita senha
-    TTY-->>Msud: Retorna senha
-    Msud->>Msud: crypt() e explicit_bzero(senha)
-    Msud->>Msud: Sanitiza variáveis de ambiente (LD_*)
-    Msud->>Kernel: initgroups("root", 0) + setuid(0) + setgid(0)
-    Msud->>Kernel: execvp(comando, args)
+flowchart TD
+    A["Chamador: Executa rtdo ou rtgo"] --> B{"Camada 1: Permissões de Arquivo (4750 root:wheel)"}
+    B -- Não pertence ao grupo wheel --> B1["Acesso Bloqueado pelo Kernel (Permission Denied)"]
+    B -- Pertence ao grupo wheel --> C{"Camada 2: Verificação em C (getgrnam('wheel'))"}
+    C -- Caller GID / Groups != wheel --> C1["Acesso Negado em Runtime"]
+    C -- Autorizado --> D{"Utilitário"}
+    D -- rtdo --> E["Solicita senha na TTY (/dev/tty) & Valida Hash"]
+    D -- rtgo --> F["Elevação Direta"]
+    E --> G["Sanitiza Ambiente (LD_*, IFS, PATH)"]
+    F --> G
+    G --> H["initgroups('root', 0) + setgid(0) + setuid(0)"]
+    H --> I["execvp(comando, argumentos)"]
 ```
+
+1. **Camada 1 (Kernel/Filesystem):** Binários instalados com `chown root:wheel` e `chmod 4750` (`rwsr-x---`). Usuários fora do grupo `wheel` não possuem sequer permissão de leitura ou execução.
+2. **Camada 2 (Runtime C):** Validação programática das identidades primárias e secundárias (`getgroups`) em relação ao GID do grupo `wheel` (com fallback para `sudo` em distros derivadas de Debian).
+3. **Higienização de Ambiente:** Expurgo obrigatório de `LD_PRELOAD`, `LD_LIBRARY_PATH`, `IFS` e imposição de `PATH` seguro.
+4. **Isolamento de Grupos:** Invocação de `initgroups("root", 0)` antes de assumir credenciais de root.
 
 ---
 
-## 🚀 Instalação e Compilação
+## 🚀 Compilação e Instalação
 
 ### Pré-requisitos
 - Compilador C (`gcc` ou `clang`)
 - `make` compatível com POSIX
-- Biblioteca de criptografia (`libcrypt-dev` em Linux; nativa na `libc` em FreeBSD)
+- Biblioteca criptográfica (`libcrypt-dev` em Linux; integrada na `libc` em FreeBSD)
 
 ### Compilação Padrão
 ```bash
@@ -70,7 +76,7 @@ CC=clang make debug
 ```
 
 ### Instalação no Sistema
-Para instalar os binários com bit SUID root (`chmod 4755`) e as manpages correspondentes em `/usr/local/bin`:
+Para instalar os binários com bit SUID restrito ao grupo `wheel` (`chmod 4750`) e as manpages correspondentes em `/usr/local`:
 ```bash
 sudo make install
 ```
@@ -86,7 +92,7 @@ chmod 0755 .githooks/pre-commit
 git config core.hooksPath .githooks
 ```
 
-Ou simplesmente execute o instalador automatizado:
+Ou execute o instalador automatizado:
 ```bash
 ./.githooks/install.sh
 ```
@@ -100,8 +106,8 @@ make check
 
 ## 📚 Documentação Técnica
 
-- 🏛️ [**ARCHITECTURE.md**](docs/ARCHITECTURE.md): Análise de fluxo de privilégios e isolamento de descritores.
-- 🔐 [**SECURITY.md**](docs/SECURITY.md): Modelo de ameaças, vetores de injeção e mitigação de LPE.
+- 🏛️ [**ARCHITECTURE.md**](docs/ARCHITECTURE.md): Análise técnica do fluxo de privilégios, restrições e TTY.
+- 🔐 [**SECURITY.md**](docs/SECURITY.md): Modelo de ameaças, mitigação de escalonamento e checklist.
 - 🤖 [**AGENTS.md**](AGENTS.md): Diretrizes para agentes autônomos de IA trabalhando neste repositório.
 - 🌐 [**ENVIRONMENT.md**](ENVIRONMENT.md): Requisitos de SO e matriz de compatibilidade.
 

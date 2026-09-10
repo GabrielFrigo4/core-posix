@@ -1,6 +1,8 @@
 # Build outputs & executables
-msud/msud
-msud.o
+rtdo/rtdo
+rtgo/rtgo
+rtdo.o
+rtgo.o
 *.o
 *.a
 *.so

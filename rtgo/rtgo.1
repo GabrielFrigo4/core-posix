@@ -1,0 +1,42 @@
+.TH RTGO 1 "September 2026" "unix" "User Commands"
+.SH NAME
+rtgo \- Root Go: fast passwordless privilege executor restricted to wheel
+.SH SYNOPSIS
+.B rtgo
+.I command
+[\fIarguments\fR...]
+.SH DESCRIPTION
+.B rtgo
+is a fast, minimalist, POSIX-compliant privilege elevation utility that executes commands directly as root without prompting for a password. Execution is strictly restricted to members of the
+.B wheel
+administrative group (or root).
+.PP
+When invoked,
+.B rtgo
+validates that the caller belongs to the
+.B wheel
+group, cleanses dangerous environment variables, drops supplementary groups, assumes root credentials, and executes the specified command via
+.BR execvp (3).
+.SH SECURITY CONSIDERATIONS
+.IP \(bu 2
+.B Group Restriction:
+The binary permissions must be set to \fIchmod 4750\fR owned by \fIroot:wheel\fR. In addition, an internal runtime verification ensures only members of group \fIwheel\fR can execute it.
+.IP \(bu 2
+.B Environment Sanitization:
+Dangerous variables such as \fBLD_PRELOAD\fR, \fBLD_LIBRARY_PATH\fR, and \fBIFS\fR are stripped, and a secure \fBPATH\fR is enforced if unset.
+.IP \(bu 2
+.B Zero External Dependencies:
+Unlike tools requiring PAM or crypt, \fBrtgo\fR has zero cryptographic or dynamic authentication overhead, minimizing attack surface.
+.SH EXIT STATUS
+.TP
+.B 0
+Successful completion of the executed command.
+.TP
+.B 1
+Access denied (not in wheel), SUID bit missing, or invalid arguments.
+.SH SEE ALSO
+.BR rtdo (1),
+.BR doas (1),
+.BR sudo (8)
+.SH AUTHORS
+Gabriel Frigo <gabriel.frigo4@gmail.com>
