@@ -1,0 +1,58 @@
+#!/bin/sh
+# .githooks/pre-commit — Quality gate para o repositório unix
+
+set -e
+
+# Cores condicionais (apenas se conectado a TTY)
+if [ -t 1 ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+else
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    NC=''
+fi
+
+printf "%b[gate] Executando validações pré-commit...%b\n" "$BLUE" "$NC"
+
+# 1. Verificação de whitespace e conflitos residuais
+printf "  • Checando espaços em branco residuais... "
+if git diff --cached --check >/dev/null 2>&1; then
+    printf "%bOK%b\n" "$GREEN" "$NC"
+else
+    printf "%bFALHOU%b\n" "$RED" "$NC"
+    git diff --cached --check
+    exit 1
+fi
+
+# 2. Verificação de formatação de código C (clang-format)
+if command -v clang-format >/dev/null 2>&1; then
+    printf "  • Verificando formatação de código (clang-format)... "
+    if make format-check >/dev/null 2>&1; then
+        printf "%bOK%b\n" "$GREEN" "$NC"
+    else
+        printf "%bFALHOU%b\n" "$RED" "$NC"
+        printf "%bExecute 'make format' para ajustar a formatação antes de commitar.%b\n" "$YELLOW" "$NC"
+        exit 1
+    fi
+else
+    printf "  • clang-format não encontrado (pulando formatação).\n"
+fi
+
+# 3. Verificação de compilação estrita
+printf "  • Verificando compilação estrita dos submódulos... "
+if make check >/dev/null 2>&1; then
+    printf "%bOK%b\n" "$GREEN" "$NC"
+else
+    printf "%bFALHOU%b\n" "$RED" "$NC"
+    make check
+    exit 1
+fi
+
+printf "%b[gate] Todas as verificações passaram com sucesso!%b\n" "$GREEN" "$NC"
+exit 0

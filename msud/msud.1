@@ -1,0 +1,50 @@
+.TH MSUD 1 "September 2026" "unix" "User Commands"
+.SH NAME
+msud \- Minimal SUID privilege executor (doas/sudo alternative)
+.SH SYNOPSIS
+.B msud
+.I command
+[\fIarguments\fR...]
+.SH DESCRIPTION
+.B msud
+is a secure, minimalist, POSIX-compliant privilege elevation utility designed as a lightweight alternative to
+.BR sudo (8)
+and
+.BR doas (1).
+.PP
+When invoked,
+.B msud
+interacts directly with the controlling terminal (\fI/dev/tty\fR) with echo disabled, prompts the invoking user for their password, authenticates against the system shadow database or password database, drops supplementary group memberships, assumes root credentials, cleanses the execution environment, and executes the target command via
+.BR execvp (3).
+.PP
+If the terminal input is interrupted (e.g. with \fBSIGINT\fR or \fBSIGQUIT\fR), terminal echo attributes are cleanly restored before exit.
+.SH SECURITY CONSIDERATIONS
+.IP \(bu 2
+.B SUID Root:
+The binary must be owned by \fIroot\fR and have its setuid bit enabled (\fIchmod 4755\fR) to read shadow entries and switch user IDs.
+.IP \(bu 2
+.B Memory Sanitization:
+Passwords in memory are immediately cleared using
+.BR explicit_bzero (3)
+after cryptographic comparison.
+.IP \(bu 2
+.B Environment Sanitization:
+Potentially dangerous variables such as \fBLD_PRELOAD\fR, \fBLD_LIBRARY_PATH\fR, and \fBIFS\fR are stripped, and a secure \fBPATH\fR is enforced if unset.
+.SH EXIT STATUS
+.TP
+.B 0
+Successful completion of the executed command.
+.TP
+.B 1
+Authentication failure, permission error, or invalid arguments.
+.TP
+.B 130
+Interrupted by user signal (\fBSIGINT\fR).
+.SH SEE ALSO
+.BR su (1),
+.BR doas (1),
+.BR sudo (8),
+.BR crypt (3),
+.BR shadow (5)
+.SH AUTHORS
+Gabriel Frigo <gabriel.frigo4@gmail.com>

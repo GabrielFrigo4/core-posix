@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Build & Verify (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install build tools & dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcrypt-dev clang-format
+
+      - name: Check C code formatting
+        run: |
+          make format-check
+
+      - name: Static syntax check
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          make check
+
+      - name: Compile release binaries
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          make all
+
+      - name: Compile debug with Sanitizers (ASan + UBSan)
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          make debug
+
+      - name: Clean artifacts
+        run: |
+          make clean

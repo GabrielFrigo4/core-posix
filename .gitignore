@@ -1,0 +1,28 @@
+# Build outputs & executables
+msud/msud
+msud.o
+*.o
+*.a
+*.so
+*.dylib
+
+# Debugging and symbols
+*.dSYM/
+*.su
+*.gcda
+*.gcno
+*.gcov
+core
+*.core
+vgcore.*
+.gdb_history
+
+# Temporary and editor files
+*~
+*.swp
+*.swo
+.DS_Store
+
+# Sanitizer dumps
+*.asan.*
+*.ubsan.*
