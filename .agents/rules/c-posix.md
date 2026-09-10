@@ -10,9 +10,9 @@
 - Sempre declarar `#define _DEFAULT_SOURCE` e `#define _XOPEN_SOURCE 700` no topo dos arquivos C para portabilidade entre glibc, musl e BSD libc.
 - Proibido o uso de extensões GNU não-padrão a menos que encapsuladas em diretivas de pré-processador específicas (`#if defined(...)`).
 - O código deve compilar sem nenhum aviso sob:
-  ```bash
-  CFLAGS="-Wall -Wextra -Werror -pedantic -std=c99"
-  ```
+    ```bash
+    CFLAGS="-Wall -Wextra -Werror -pedantic -std=c99"
+    ```
 
 ---
 
@@ -27,6 +27,6 @@
 ## 3. Portabilidade Multiplataforma
 
 - **Linux vs FreeBSD**:
-  - Em Linux, senhas de usuários comuns residem em `/etc/shadow` e necessitam de `<shadow.h>` e `getspnam()`.
-  - Em FreeBSD/OpenBSD, senhas residem em `/etc/master.passwd` acessíveis via `getpwuid()` quando executado como root.
-  - A biblioteca de criptografia (`-lcrypt`) deve ser condicional: necessária na maioria dos ambientes Linux (glibc/libxcrypt) e inclusa na `libc` base dos BSDs.
+    - Em Linux, senhas de usuários comuns residem em `/etc/shadow` e necessitam de `<shadow.h>` e `getspnam()`.
+    - Em FreeBSD/OpenBSD, senhas residem em `/etc/master.passwd` acessíveis via `getpwuid()` quando executado como root.
+    - A biblioteca de criptografia (`-lcrypt`) deve ser condicional: necessária na maioria dos ambientes Linux (glibc/libxcrypt) e inclusa na `libc` base dos BSDs.

@@ -30,18 +30,14 @@ else
     exit 1
 fi
 
-# 2. Verificação de formatação de código C (clang-format)
-if command -v clang-format >/dev/null 2>&1; then
-    printf "  • Verificando formatação de código (clang-format)... "
-    if make format-check >/dev/null 2>&1; then
-        printf "%bOK%b\n" "$GREEN" "$NC"
-    else
-        printf "%bFALHOU%b\n" "$RED" "$NC"
-        printf "%bExecute 'make format' para ajustar a formatação antes de commitar.%b\n" "$YELLOW" "$NC"
-        exit 1
-    fi
+# 2. Verificação de formatação de código e documentação (clang-format e prettier)
+printf "  • Verificando formatação (clang-format e prettier)... "
+if make format-check >/dev/null 2>&1; then
+    printf "%bOK%b\n" "$GREEN" "$NC"
 else
-    printf "  • clang-format não encontrado (pulando formatação).\n"
+    printf "%bFALHOU%b\n" "$RED" "$NC"
+    printf "%bExecute 'make format' para ajustar a formatação antes de commitar.%b\n" "$YELLOW" "$NC"
+    exit 1
 fi
 
 # 3. Verificação de compilação estrita

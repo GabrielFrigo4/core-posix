@@ -1,5 +1,9 @@
+#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
+#endif
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 700
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -143,7 +147,7 @@ static int ler_senha_tty(const char *prompt, char *buffer, size_t tamanho)
 	sigaction(SIGTERM, &sa, &old_sa_term);
 
 	new_term = g_saved_termios;
-	new_term.c_lflag &= ~(ECHO);
+	new_term.c_lflag &= ~(tcflag_t)ECHO;
 	tcsetattr(g_tty_fd, TCSAFLUSH, &new_term);
 
 	if (write(g_tty_fd, prompt, strlen(prompt)) < 0)

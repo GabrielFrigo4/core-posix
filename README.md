@@ -7,7 +7,7 @@
 [![Standards: POSIX.1-2008](https://img.shields.io/badge/Standards-POSIX.1--2008-success.svg)](https://pubs.opengroup.org/onlinepubs/9699919799/)
 [![C Standard: C99](https://img.shields.io/badge/C_Standard-C99-informational.svg)](https://en.cppreference.com/w/c/99)
 
-*Suíte minimalista, segura e auditável de ferramentas e utilitários Unix em C puro.*
+_Suíte minimalista, segura e auditável de ferramentas e utilitários Unix em C puro._
 
 </div>
 
@@ -19,17 +19,17 @@ O projeto **unix** reúne utilitários de sistema concebidos sob a filosofia cl�
 
 A suíte introduz dois executores de privilégios de alto desempenho com controle rígido de acesso:
 
-- **`rtdo`** (*Root Do*): Executor de comandos com privilégio elevado mediante autenticação de senha via `/dev/tty`. Restrito ao grupo **`wheel`**.
-- **`rtgo`** (*Root Go*): Executor imediato sem senha (*passwordless*), de latência ultrabaixa (< 1ms), com elevação segura restrita exclusivamente ao grupo **`wheel`**.
+- **`rtdo`** (_Root Do_): Executor de comandos com privilégio elevado mediante autenticação de senha via `/dev/tty`. Restrito ao grupo **`wheel`**.
+- **`rtgo`** (_Root Go_): Executor imediato sem senha (_passwordless_), de latência ultrabaixa (< 1ms), com elevação segura restrita exclusivamente ao grupo **`wheel`**.
 
 ---
 
 ## 🧩 Utilitários da Suíte
 
-| Utilitário | Descrição | Autenticação | Controle de Acesso | Permissões |
-| :--- | :--- | :--- | :--- | :--- |
-| [**`rtdo`**](rtdo/) | Alternativa leve ao `sudo`/`doas` | Senha da TTY (`crypt`) | `root` ou grupo `wheel` | `4750 root:wheel` |
-| [**`rtgo`**](rtgo/) | Elevação imediata e sem senha | Nenhuma (*Zero Password*) | `root` ou grupo `wheel` | `4750 root:wheel` |
+| Utilitário          | Descrição                         | Autenticação              | Controle de Acesso      | Permissões        |
+| :------------------ | :-------------------------------- | :------------------------ | :---------------------- | :---------------- |
+| [**`rtdo`**](rtdo/) | Alternativa leve ao `sudo`/`doas` | Senha da TTY (`crypt`)    | `root` ou grupo `wheel` | `4750 root:wheel` |
+| [**`rtgo`**](rtgo/) | Elevação imediata e sem senha     | Nenhuma (_Zero Password_) | `root` ou grupo `wheel` | `4750 root:wheel` |
 
 ---
 
@@ -62,11 +62,13 @@ flowchart TD
 ## 🚀 Compilação e Instalação
 
 ### Pré-requisitos
+
 - Compilador C (`gcc` ou `clang`)
 - `make` compatível com POSIX
 - Biblioteca criptográfica (`libcrypt-dev` em Linux; integrada na `libc` em FreeBSD)
 
 ### Compilação Padrão
+
 ```bash
 # Compilar todos os utilitários da suíte
 make all
@@ -76,7 +78,9 @@ CC=clang make debug
 ```
 
 ### Instalação no Sistema
+
 Para instalar os binários com bit SUID restrito ao grupo `wheel` (`chmod 4750`) e as manpages correspondentes em `/usr/local`:
+
 ```bash
 sudo make install
 ```
@@ -93,11 +97,13 @@ git config core.hooksPath .githooks
 ```
 
 Ou execute o instalador automatizado:
+
 ```bash
 ./.githooks/install.sh
 ```
 
 Para rodar a verificação manual de qualidade:
+
 ```bash
 make check
 ```

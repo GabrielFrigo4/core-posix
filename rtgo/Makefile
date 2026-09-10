@@ -3,7 +3,7 @@
 MAKEFLAGS += --no-print-directory -s
 
 CC      ?= cc
-CFLAGS  ?= -Wall -Wextra -Werror -pedantic -std=c99 -O2
+CFLAGS  ?= -Wall -Wextra -Werror -pedantic -Wformat=2 -Wvla -Wshadow -Wconversion -Wsign-conversion -Wno-missing-field-initializers -Wno-cpp -std=c23 -O2
 LIBS    ?=
 TARGET   = rtgo
 SRC      = rtgo.c
@@ -17,7 +17,7 @@ $(TARGET): $(OBJ)
 rtgo.o: rtgo.c
 	$(CC) $(CFLAGS) -c rtgo.c
 
-debug: CFLAGS = -Wall -Wextra -pedantic -std=c99 -g -O0 -fsanitize=address,undefined
+debug: CFLAGS = -Wall -Wextra -pedantic -Wformat=2 -Wvla -Wshadow -Wconversion -Wsign-conversion -Wno-missing-field-initializers -Wno-cpp -std=c23 -g -O0 -fsanitize=address,undefined
 debug: clean $(TARGET)
 
 check:
