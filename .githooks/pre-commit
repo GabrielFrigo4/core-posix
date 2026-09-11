@@ -1,5 +1,5 @@
 #!/bin/sh
-# .githooks/pre-commit — Quality gate para o repositório unix
+# .githooks/pre-commit — Quality gate para o repositório unix-core
 
 set -e
 

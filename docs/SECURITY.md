@@ -1,6 +1,6 @@
 # 🔐 Modelo de Segurança e Ameaças
 
-Diretrizes de segurança para a suíte de ferramentas do repositório `unix` (`rtdo` e `rtgo`).
+Diretrizes de segurança para a suíte de ferramentas do repositório `unix-core` (`rtdo` e `rtgo`).
 
 ---
 
