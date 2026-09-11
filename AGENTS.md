@@ -19,7 +19,7 @@ A suíte disponibiliza dois executores de privilégios SUID:
 
 1. **Conformidade POSIX e Padrão C99:** Todo código C deve compilar sem avisos com `cc -Wall -Wextra -Werror -pedantic -std=c99`.
 2. **Restrição Mandatória a `wheel` (4750):**
-    - Utilitários de elevação de privilégio DEVEM ser restritos exclusivamente ao grupo `wheel` (ou `root`), tanto em permissões de arquivo (`chmod 4750 root:wheel`) quanto por validação em runtime C (`verificar_grupo_autorizado()`).
+    - Utilitários de elevação de privilégio DEVEM ser restritos exclusivamente ao grupo `wheel` (ou `root`), tanto em permissões de arquivo (`chmod 4750 root:wheel`) quanto por validação em runtime C (`is_authorized_group()`).
 3. **Higiene de Memória & Segredos:** Qualquer dado sensível (senhas lidas de TTY em `rtdo`, buffers intermediários) DEVE ser sobrescrito com `explicit_bzero` antes do término do escopo.
 4. **Segurança de Binários SUID:**
     - Sempre limpar variáveis de ambiente perigosas (`LD_PRELOAD`, `LD_LIBRARY_PATH`, `IFS`) antes de `execvp`.
@@ -28,6 +28,7 @@ A suíte disponibiliza dois executores de privilégios SUID:
 5. **Portabilidade Linux & BSD:** Garantir que o código compile e execute tanto em distribuições Linux quanto em FreeBSD (`pwd->pw_passwd` vs `getspnam`, detecção de `-lcrypt`).
 6. **Zero Alocações Dinâmicas Desnecessárias:** Preferir buffers estáticos com checagem rígida de limites (`sizeof`) em vez de `malloc`/`free` para ferramentas essenciais de sistema.
 7. **Formatação Padronizada:** Todo código C deve passar na validação do `.clang-format` (`make format-check`).
+8. **Clean Code & Idioma Inglês:** Código autoexplicativo (zero comentários redundantes), funções pequenas de responsabilidade única (SRP), fail-fast e nível único de abstração na `main`. Todos os identificadores (funções, variáveis, macros) e mensagens de terminal (erros, usage, prompts) DEVEM ser estritamente em inglês.
 
 ---
 
@@ -37,7 +38,7 @@ A suíte disponibiliza dois executores de privilégios SUID:
 unix/
 ├── .agents/
 │   ├── rules/
-│   │   ├── c-posix.md             # Padrões C99/POSIX e portabilidade
+│   │   ├── c-posix.md             # Padrões C99/POSIX, Clean Code e convenção em inglês
 │   │   └── security.md            # Diretrizes de segurança SUID e restrição a wheel
 │   └── skills/
 │       └── unix-audit/

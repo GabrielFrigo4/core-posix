@@ -1,11 +1,11 @@
 ---
 name: unix-audit
-description: Runbook cognitivo para auditoria estática, conformidade POSIX e validação de segurança em utilitários Unix C.
+description: Runbook cognitivo para auditoria estática, conformidade POSIX, Clean Code e validação de segurança em utilitários Unix C.
 ---
 
 # Unix Audit & Security Verification
 
-Use esta skill para verificar a conformidade de código C e segurança de binários no repositório `unix`.
+Use esta skill para verificar a conformidade de código C, padrões Clean Code e segurança de binários no repositório `unix`.
 
 ## Procedimento de Auditoria
 
@@ -42,3 +42,9 @@ Use esta skill para verificar a conformidade de código C e segurança de binár
     - Conferir se `initgroups()` é chamado antes de `setuid(0)`.
     - Conferir se variáveis de ambiente perigosas são expurgadas antes de qualquer `exec*`.
     - Conferir se o sinal `SIGINT` restaura os atributos da TTY.
+
+5. **Auditoria de Clean Code e Idioma Inglês:**
+    - Verificar ausência de comentários redundantes nos arquivos `.c`.
+    - Confirmar que todos os identificadores (funções, variáveis, macros, tipos) e saídas de terminal estão estritamente em inglês.
+    - Checar ausência de `#include` órfãos ou variáveis não utilizadas.
+    - Conferir se funções possuem responsabilidade única e `main` mantém nível uniforme de abstração.

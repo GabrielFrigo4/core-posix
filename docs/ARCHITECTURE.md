@@ -10,7 +10,7 @@ Visão aprofundada da mecânica de funcionamento, transições de privilégios e
 flowchart TD
     A["Chamador: Executa binário SUID"] --> B{"geteuid() == 0 ?"}
     B -- Não --> B1["Erro: Requer SUID root (chmod 4750)"]
-    B -- Sim --> C{"verificar_grupo_autorizado(): Caller in 'wheel' or root?"}
+    B -- Sim --> C{"is_authorized_group(): Caller in 'wheel' or root?"}
     C -- Não --> C1["Erro: Acesso negado (não pertence ao grupo wheel)"]
     C -- Sim --> D{"Utilitário"}
 
@@ -31,9 +31,9 @@ flowchart TD
         D -- rtgo --> M["Elevação imediata para membros do wheel"]
     end
 
-    L -- Sim --> N["sanitizar_ambiente(): Expura LD_* e valida PATH"]
+    L -- Sim --> N["sanitize_environment(): Expura LD_* e valida PATH"]
     M --> N
-    N --> O["initgroups('root', 0) & setgid(0) & setuid(0)"]
+    N --> O["assume_root(): initgroups('root', 0) & setgid(0) & setuid(0)"]
     O --> P["execvp(argv[1], ...): Transfere execução final"]
 ```
 

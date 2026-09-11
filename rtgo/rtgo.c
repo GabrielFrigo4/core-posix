@@ -14,7 +14,7 @@
 
 #define MAX_SUPP_GROUPS 64
 
-static int verificar_grupo_autorizado(void)
+static int is_authorized_group(void)
 {
 	if (getuid() == 0)
 	{
@@ -32,8 +32,8 @@ static int verificar_grupo_autorizado(void)
 		return 0;
 	}
 
-	gid_t gid_alvo = gr->gr_gid;
-	if (getgid() == gid_alvo)
+	gid_t target_gid = gr->gr_gid;
+	if (getgid() == target_gid)
 	{
 		return 1;
 	}
@@ -47,7 +47,7 @@ static int verificar_grupo_autorizado(void)
 
 	for (int i = 0; i < ngroups; i++)
 	{
-		if (groups[i] == gid_alvo)
+		if (groups[i] == target_gid)
 		{
 			return 1;
 		}
@@ -56,7 +56,7 @@ static int verificar_grupo_autorizado(void)
 	return 0;
 }
 
-static void sanitizar_ambiente(void)
+static void sanitize_environment(void)
 {
 	unsetenv("LD_PRELOAD");
 	unsetenv("LD_LIBRARY_PATH");
@@ -73,7 +73,7 @@ static void sanitizar_ambiente(void)
 	}
 }
 
-static int assumir_root(void)
+static int assume_root(void)
 {
 	if (initgroups("root", 0) != 0 || setgid(0) != 0 || setuid(0) != 0)
 	{
@@ -86,27 +86,27 @@ int main(int argc, char *argv[])
 {
 	if (argc < 2)
 	{
-		fprintf(stderr, "Uso: %s <comando> [argumentos...]\n", argv[0]);
+		fprintf(stderr, "Usage: %s <command> [arguments...]\n", argv[0]);
 		return 1;
 	}
 
 	if (geteuid() != 0)
 	{
-		fprintf(stderr, "rtgo: erro: binario requer SUID root (chmod 4750).\n");
+		fprintf(stderr, "rtgo: error: binary requires SUID root (chmod 4750).\n");
 		return 1;
 	}
 
-	if (!verificar_grupo_autorizado())
+	if (!is_authorized_group())
 	{
-		fprintf(stderr, "rtgo: acesso negado: requer pertencer ao grupo 'wheel'.\n");
+		fprintf(stderr, "rtgo: access denied: caller must belong to 'wheel' group.\n");
 		return 1;
 	}
 
-	sanitizar_ambiente();
+	sanitize_environment();
 
-	if (assumir_root() != 0)
+	if (assume_root() != 0)
 	{
-		perror("rtgo: falha ao assumir credenciais de root");
+		perror("rtgo: failed to assume root credentials");
 		return 1;
 	}
 
