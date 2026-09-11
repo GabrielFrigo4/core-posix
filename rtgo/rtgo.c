@@ -5,10 +5,8 @@
 #define _XOPEN_SOURCE 700
 #endif
 
-#include <fcntl.h>
 #include <grp.h>
 #include <paths.h>
-#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -26,7 +24,6 @@ static int verificar_grupo_autorizado(void)
 	struct group *gr = getgrnam("wheel");
 	if (gr == NULL)
 	{
-		/* Fallback para distros Linux onde 'wheel' nao existe */
 		gr = getgrnam("sudo");
 	}
 
@@ -61,12 +58,10 @@ static int verificar_grupo_autorizado(void)
 
 static void sanitizar_ambiente(void)
 {
-	/* Variaveis comumente abusadas para hijacking de execucao */
 	unsetenv("LD_PRELOAD");
 	unsetenv("LD_LIBRARY_PATH");
 	unsetenv("IFS");
 
-	/* Garantir PATH seguro caso esteja vazio ou nulo */
 	const char *path = getenv("PATH");
 	if (path == NULL || path[0] == '\0')
 	{
@@ -78,6 +73,15 @@ static void sanitizar_ambiente(void)
 	}
 }
 
+static int assumir_root(void)
+{
+	if (initgroups("root", 0) != 0 || setgid(0) != 0 || setuid(0) != 0)
+	{
+		return -1;
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -86,25 +90,21 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* Validar SUID root ativo */
 	if (geteuid() != 0)
 	{
 		fprintf(stderr, "rtgo: erro: binario requer SUID root (chmod 4750).\n");
 		return 1;
 	}
 
-	/* Validar restricao ao grupo wheel/root */
 	if (!verificar_grupo_autorizado())
 	{
 		fprintf(stderr, "rtgo: acesso negado: requer pertencer ao grupo 'wheel'.\n");
 		return 1;
 	}
 
-	/* Higienizar ambiente antes de assumir root e executar comando */
 	sanitizar_ambiente();
 
-	/* Assumir grupos e identidade de root */
-	if (initgroups("root", 0) != 0 || setgid(0) != 0 || setuid(0) != 0)
+	if (assumir_root() != 0)
 	{
 		perror("rtgo: falha ao assumir credenciais de root");
 		return 1;

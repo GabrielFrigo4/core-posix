@@ -51,7 +51,6 @@ static int verificar_grupo_autorizado(void)
 	struct group *gr = getgrnam("wheel");
 	if (gr == NULL)
 	{
-		/* Fallback para distros Linux onde 'wheel' nao existe */
 		gr = getgrnam("sudo");
 	}
 
@@ -84,7 +83,7 @@ static int verificar_grupo_autorizado(void)
 	return 0;
 }
 
-static const char *obter_hash_usuario(struct passwd *pwd)
+static const char *obter_hash_usuario(const struct passwd *pwd)
 {
 #if defined(__linux__)
 	struct spwd *sp = getspnam(pwd->pw_name);
@@ -104,18 +103,46 @@ static int conta_bloqueada(const char *hash)
 	{
 		return 1;
 	}
-	/* Contas bloqueadas ou desabilitadas em sistemas Unix */
-	if (hash[0] == '!' || hash[0] == '*' || hash[0] == 'x')
-	{
-		return 1;
-	}
-	return 0;
+
+	return (hash[0] == '!' || hash[0] == '*' || hash[0] == 'x');
+}
+
+static void escrever_tty(int fd, const char *str)
+{
+	size_t len = strlen(str);
+	ssize_t written = write(fd, str, len);
+	(void)written;
+}
+
+static void configurar_sinais(
+    struct sigaction *old_int, struct sigaction *old_quit, struct sigaction *old_term
+)
+{
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = signal_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	sigaction(SIGINT, &sa, old_int);
+	sigaction(SIGQUIT, &sa, old_quit);
+	sigaction(SIGTERM, &sa, old_term);
+}
+
+static void restaurar_sinais(
+    const struct sigaction *old_int, const struct sigaction *old_quit,
+    const struct sigaction *old_term
+)
+{
+	sigaction(SIGINT, old_int, NULL);
+	sigaction(SIGQUIT, old_quit, NULL);
+	sigaction(SIGTERM, old_term, NULL);
 }
 
 static int ler_senha_tty(const char *prompt, char *buffer, size_t tamanho)
 {
 	struct termios new_term;
-	struct sigaction sa, old_sa_int, old_sa_quit, old_sa_term;
+	struct sigaction old_sa_int, old_sa_quit, old_sa_term;
 	size_t i = 0;
 	char c;
 	ssize_t n;
@@ -135,33 +162,18 @@ static int ler_senha_tty(const char *prompt, char *buffer, size_t tamanho)
 		return -1;
 	}
 
-	/* Configurar tratadores de sinal para restaurar TTY em caso de interrupcao */
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_handler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-
-	sigaction(SIGINT, &sa, &old_sa_int);
-	sigaction(SIGQUIT, &sa, &old_sa_quit);
-	sigaction(SIGTERM, &sa, &old_sa_term);
+	configurar_sinais(&old_sa_int, &old_sa_quit, &old_sa_term);
 
 	new_term = g_saved_termios;
 	new_term.c_lflag &= ~(tcflag_t)ECHO;
 	tcsetattr(g_tty_fd, TCSAFLUSH, &new_term);
 
-	if (write(g_tty_fd, prompt, strlen(prompt)) < 0)
-	{
-		/* falha de escrita tratada silenciosamente */
-	}
+	escrever_tty(g_tty_fd, prompt);
 
 	while (i < tamanho - 1 && !g_interrupted)
 	{
 		n = read(g_tty_fd, &c, 1);
-		if (n <= 0)
-		{
-			break;
-		}
-		if (c == '\n' || c == '\r')
+		if (n <= 0 || c == '\n' || c == '\r')
 		{
 			break;
 		}
@@ -169,17 +181,9 @@ static int ler_senha_tty(const char *prompt, char *buffer, size_t tamanho)
 	}
 	buffer[i] = '\0';
 
-	if (write(g_tty_fd, "\n", 1) < 0)
-	{
-		/* falha de escrita tratada silenciosamente */
-	}
-
+	escrever_tty(g_tty_fd, "\n");
 	tcsetattr(g_tty_fd, TCSANOW, &g_saved_termios);
-
-	/* Restaurar handlers de sinal originais */
-	sigaction(SIGINT, &old_sa_int, NULL);
-	sigaction(SIGQUIT, &old_sa_quit, NULL);
-	sigaction(SIGTERM, &old_sa_term, NULL);
+	restaurar_sinais(&old_sa_int, &old_sa_quit, &old_sa_term);
 
 	close(g_tty_fd);
 	g_tty_fd = -1;
@@ -189,12 +193,10 @@ static int ler_senha_tty(const char *prompt, char *buffer, size_t tamanho)
 
 static void sanitizar_ambiente(void)
 {
-	/* Variaveis comumente abusadas para hijacking de execucao */
 	unsetenv("LD_PRELOAD");
 	unsetenv("LD_LIBRARY_PATH");
 	unsetenv("IFS");
 
-	/* Garantir PATH seguro caso esteja vazio ou nulo */
 	const char *path = getenv("PATH");
 	if (path == NULL || path[0] == '\0')
 	{
@@ -206,59 +208,31 @@ static void sanitizar_ambiente(void)
 	}
 }
 
-int main(int argc, char *argv[])
+static int autenticar_usuario(const struct passwd *pwd)
 {
 	char senha_digitada[MAX_PASSWORD_LEN];
 	char prompt[MAX_PROMPT_LEN];
-	struct passwd *pwd;
 	const char *hash_alvo;
 	char *hash_calculado;
-
-	if (argc < 2)
-	{
-		fprintf(stderr, "Uso: %s <comando> [argumentos...]\n", argv[0]);
-		return 1;
-	}
-
-	/* Validar SUID root ativo */
-	if (geteuid() != 0)
-	{
-		fprintf(stderr, "rtdo: erro: binario requer SUID root (chmod 4750).\n");
-		return 1;
-	}
-
-	/* Validar restricao ao grupo wheel/root */
-	if (!verificar_grupo_autorizado())
-	{
-		fprintf(stderr, "rtdo: acesso negado: requer pertencer ao grupo 'wheel'.\n");
-		return 1;
-	}
-
-	pwd = getpwuid(getuid());
-	if (pwd == NULL)
-	{
-		perror("rtdo: getpwuid");
-		return 1;
-	}
 
 	hash_alvo = obter_hash_usuario(pwd);
 	if (hash_alvo == NULL)
 	{
 		fprintf(stderr, "rtdo: falha ao acessar credenciais do usuario.\n");
-		return 1;
+		return -1;
 	}
 
 	if (conta_bloqueada(hash_alvo))
 	{
 		fprintf(stderr, "rtdo: conta bloqueada ou desprovida de senha.\n");
-		return 1;
+		return -1;
 	}
 
 	snprintf(prompt, sizeof(prompt), "[rtdo] Senha para %s: ", pwd->pw_name);
 	if (ler_senha_tty(prompt, senha_digitada, sizeof(senha_digitada)) != 0)
 	{
 		fprintf(stderr, "rtdo: erro ao interagir com o terminal.\n");
-		return 1;
+		return -1;
 	}
 
 	hash_calculado = crypt(senha_digitada, hash_alvo);
@@ -267,14 +241,56 @@ int main(int argc, char *argv[])
 	if (hash_calculado == NULL || strcmp(hash_calculado, hash_alvo) != 0)
 	{
 		fprintf(stderr, "rtdo: senha incorreta.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int assumir_root(void)
+{
+	if (initgroups("root", 0) != 0 || setgid(0) != 0 || setuid(0) != 0)
+	{
+		return -1;
+	}
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc < 2)
+	{
+		fprintf(stderr, "Uso: %s <comando> [argumentos...]\n", argv[0]);
 		return 1;
 	}
 
-	/* Higienizar ambiente antes de assumir root e executar comando */
+	if (geteuid() != 0)
+	{
+		fprintf(stderr, "rtdo: erro: binario requer SUID root (chmod 4750).\n");
+		return 1;
+	}
+
+	if (!verificar_grupo_autorizado())
+	{
+		fprintf(stderr, "rtdo: acesso negado: requer pertencer ao grupo 'wheel'.\n");
+		return 1;
+	}
+
+	struct passwd *pwd = getpwuid(getuid());
+	if (pwd == NULL)
+	{
+		perror("rtdo: getpwuid");
+		return 1;
+	}
+
+	if (autenticar_usuario(pwd) != 0)
+	{
+		return 1;
+	}
+
 	sanitizar_ambiente();
 
-	/* Assumir grupos e identidade de root */
-	if (initgroups("root", 0) != 0 || setgid(0) != 0 || setuid(0) != 0)
+	if (assumir_root() != 0)
 	{
 		perror("rtdo: falha ao assumir credenciais de root");
 		return 1;
