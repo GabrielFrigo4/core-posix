@@ -1,6 +1,6 @@
 # 🏛️ Arquitetura e Ciclo de Execução
 
-Visão aprofundada da mecânica de funcionamento, transições de privilégios e ciclo de vida dos processos na suíte `unix-core`, cobrindo os utilitários `rtdo` e `rtgo`.
+Visão aprofundada da mecânica de funcionamento, transições de privilégios e ciclo de vida dos processos na suíte **Core POSIX** (`core-posix`), cobrindo os utilitários `rtdo` e `rtgo`.
 
 ---
 

@@ -1,6 +1,6 @@
-# 🏛️ Unix Core Environment & Baseline
+# 🏛️ Core POSIX Environment & Baseline
 
-Especificação do ambiente operacional, dependências de sistema e matriz de suporte para a suíte de ferramentas **unix-core**.
+Especificação do ambiente operacional, dependências de sistema e matriz de suporte para a suíte de ferramentas **core-posix**.
 
 ---
 

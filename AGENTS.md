@@ -1,4 +1,4 @@
-# ⚡ Unix Core — AI Agent Briefing
+# ⚡ Core POSIX — AI Agent Briefing
 
 > Suíte de utilitários Unix minimalistas, seguros e estritamente aderentes ao padrão POSIX em linguagem C.
 
@@ -6,7 +6,7 @@
 
 ## 🧭 Identidade e Papel
 
-O repositório **unix-core** reúne implementações limpas de ferramentas de sistema, concebidas sob a filosofia Unix: ferramentas pequenas, focadas, sem dependências externas desnecessárias, com código auditável e segurança em primeiro plano.
+O repositório **core-posix** reúne implementações limpas de ferramentas de sistema, concebidas sob a filosofia Unix: ferramentas pequenas, focadas, sem dependências externas desnecessárias, com código auditável e segurança em primeiro plano.
 
 A suíte disponibiliza dois executores de privilégios SUID:
 

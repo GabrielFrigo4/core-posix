@@ -1,8 +1,8 @@
-# ⚡ unix-core
+# ⚡ Core POSIX
 
 <div align="center">
 
-[![CI](https://github.com/GabrielFrigo4/unix-core/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielFrigo4/unix-core/actions/workflows/ci.yml)
+[![CI](https://github.com/GabrielFrigo4/core-posix/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielFrigo4/core-posix/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Standards: POSIX.1-2008](https://img.shields.io/badge/Standards-POSIX.1--2008-success.svg)](https://pubs.opengroup.org/onlinepubs/9699919799/)
 [![C Standard: C99](https://img.shields.io/badge/C_Standard-C99-informational.svg)](https://en.cppreference.com/w/c/99)
@@ -15,7 +15,7 @@ _Suíte minimalista, segura e auditável de ferramentas e utilitários Unix em C
 
 ## 📖 Visão Geral
 
-O projeto **unix-core** reúne utilitários de sistema concebidos sob a filosofia clássica do Unix: ferramentas focadas, com base de código enxuta, livres de dependências externas inchadas, fáceis de auditar e estritamente aderentes ao padrão POSIX.
+O projeto **Core POSIX** (`core-posix`) reúne utilitários de sistema concebidos sob a filosofia clássica do Unix: ferramentas focadas, com base de código enxuta, livres de dependências externas inchadas, fáceis de auditar e estritamente aderentes ao padrão POSIX.
 
 A suíte introduz dois executores de privilégios de alto desempenho com controle rígido de acesso:
 
