@@ -2,13 +2,13 @@
 .SILENT:
 MAKEFLAGS += --no-print-directory -s
 
-CC      ?= cc
-STD != $(CC) -std=c23 -E - < "/dev/null" > "/dev/null" 2>&1 && echo "-std=c23" || echo "-std=c2x"
-CFLAGS  ?= -Wall -Wextra -Werror -pedantic -Wformat=2 -Wvla -Wshadow -Wconversion -Wsign-conversion -Wno-missing-field-initializers -Wno-cpp $(STD) -O2
-LIBS    ?= -lcrypt
-TARGET   = rtdo
-SRC      = rtdo.c
-OBJ      = rtdo.o
+CC       ?= cc
+STD      != $(CC) -std=c23 -E - < "/dev/null" > "/dev/null" 2>&1 && echo "-std=c23" || echo "-std=c2x"
+CFLAGS   ?= -Wall -Wextra -Werror -pedantic -Wformat=2 -Wvla -Wshadow -Wconversion -Wsign-conversion -Wno-missing-field-initializers -Wno-cpp $(STD) -O2
+LIBS     ?= -lcrypt
+TARGET    = rtdo
+SRC       = rtdo.c
+OBJ       = rtdo.o
 
 all: $(TARGET)
 
