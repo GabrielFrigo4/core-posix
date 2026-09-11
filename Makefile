@@ -26,8 +26,8 @@ format-c:
 	find . -type f \( -name "*.c" -o -name "*.h" \) -not -path "*/.*" -exec clang-format -i {} +
 
 format-docs:
-	if command -v prettier >/dev/null 2>&1; then \
-		prettier --write "**/*.{md,yaml,yml,json}" 2>/dev/null || true; \
+	if command -v prettier > "/dev/null" 2>&1; then \
+		prettier --write "**/*.{md,yaml,yml,json}" 2> "/dev/null" || true; \
 	fi
 
 format-check: format-check-c format-check-docs
@@ -36,7 +36,7 @@ format-check-c:
 	find . -type f \( -name "*.c" -o -name "*.h" \) -not -path "*/.*" -exec clang-format --dry-run --Werror {} +
 
 format-check-docs:
-	if command -v prettier >/dev/null 2>&1; then \
+	if command -v prettier > "/dev/null" 2>&1; then \
 		prettier --check "**/*.{md,yaml,yml,json}"; \
 	fi
 

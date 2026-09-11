@@ -22,7 +22,7 @@ printf "%b[gate] Executando validações pré-commit...%b\n" "$BLUE" "$NC"
 
 # 1. Verificação de whitespace e conflitos residuais
 printf "  • Checando espaços em branco residuais... "
-if git diff --cached --check >/dev/null 2>&1; then
+if git diff --cached --check > "/dev/null" 2>&1; then
     printf "%bOK%b\n" "$GREEN" "$NC"
 else
     printf "%bFALHOU%b\n" "$RED" "$NC"
@@ -32,7 +32,7 @@ fi
 
 # 2. Verificação de formatação de código e documentação (clang-format e prettier)
 printf "  • Verificando formatação (clang-format e prettier)... "
-if make format-check >/dev/null 2>&1; then
+if make format-check > "/dev/null" 2>&1; then
     printf "%bOK%b\n" "$GREEN" "$NC"
 else
     printf "%bFALHOU%b\n" "$RED" "$NC"
@@ -42,7 +42,7 @@ fi
 
 # 3. Verificação de compilação estrita
 printf "  • Verificando compilação estrita dos submódulos... "
-if make check >/dev/null 2>&1; then
+if make check > "/dev/null" 2>&1; then
     printf "%bOK%b\n" "$GREEN" "$NC"
 else
     printf "%bFALHOU%b\n" "$RED" "$NC"
