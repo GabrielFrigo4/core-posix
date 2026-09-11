@@ -89,22 +89,47 @@ sudo make install
 
 ## 🧪 Quality Gates & Ganchos Git (.githooks)
 
-Para habilitar a validação de formatação (`clang-format`), integridade de whitespace e compilação antes de cada commit:
+O repositório inclui ganchos Git locais (`.githooks`) que impedem a inclusão de código fora de padrão, executando validações automáticas antes de cada commit: verificação de espaços em branco residuais, integridade de formatação (`clang-format` e `prettier`) e compilação estrita (`make check`).
+
+Para que os scripts funcionem e o Git os execute, é necessário conceder permissão de execução via `chmod` e configurar o diretório no Git.
+
+### Opção 1: Via Instalador Automatizado (Recomendado)
+
+Conceda permissão de execução ao instalador e execute-o (ele ajustará as permissões dos hooks e registrará o caminho no Git automaticamente):
 
 ```bash
-chmod 0755 .githooks/pre-commit
-git config core.hooksPath .githooks
-```
-
-Ou execute o instalador automatizado:
-
-```bash
+chmod +x .githooks/install.sh
 ./.githooks/install.sh
 ```
 
-Para rodar a verificação manual de qualidade:
+### Opção 2: Configuração Manual Passo a Passo
+
+Caso prefira configurar manualmente sem o script instalador:
+
+1. **Permissão de execução com `chmod`:**
+   Conceda permissão de execução para todos os scripts do diretório `.githooks` (ou individualmente para o `pre-commit`):
+
+    ```bash
+    chmod 0755 .githooks/*
+    # ou: chmod +x .githooks/pre-commit
+    ```
+
+2. **Ativação no Git:**
+   Configure o repositório local para apontar os hooks para o diretório versionado `.githooks`:
+
+    ```bash
+    git config core.hooksPath .githooks
+    ```
+
+### Verificação Manual dos Gates
+
+Para testar o script de pre-commit diretamente ou rodar a suíte completa de checagens:
 
 ```bash
+# Executar o gancho de pre-commit diretamente
+./.githooks/pre-commit
+
+# Ou executar a validação completa via Makefile
 make check
 ```
 
