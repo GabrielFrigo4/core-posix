@@ -48,3 +48,14 @@ Use esta skill para verificar a conformidade de código C, padrões Clean Code e
     - Confirmar que todos os identificadores (funções, variáveis, macros, tipos) e saídas de terminal estão estritamente em inglês.
     - Checar ausência de `#include` órfãos ou variáveis não utilizadas.
     - Conferir se funções possuem responsabilidade única e `main` mantém nível uniforme de abstração.
+
+---
+
+## 📚 Literatura de Referência & Ferramentas Oficiais
+
+Recomenda-se enfaticamente a consulta às fontes canônicas de segurança e boas práticas em C:
+
+- **LLVM / Clang Sanitizers:** <https://clang.llvm.org/docs/AddressSanitizer.html>
+- **CERT C Coding Standard (SEI):** <https://wiki.sei.cmu.edu/confluence/display/c>
+- **Livro de Referência em Segurança:** _Secure Coding in C and C++_ (Robert C. Seacord, 2ª edição, Addison-Wesley / CERT).
+- **Livro Canônico de Engenharia:** _The Practice of Programming_ (Brian W. Kernighan & Rob Pike, 1999, Addison-Wesley).
