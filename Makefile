@@ -1,10 +1,40 @@
 .POSIX:
 .SILENT:
+
 MAKEFLAGS += --no-print-directory -s
+
+# ----------------------------------------------------------------
+# Makefile: Core POSIX C99 & POSIX Implementations
+# ----------------------------------------------------------------
 
 SUBDIRS = rtdo rtgo
 
-all:
+.PHONY: all help build debug check format format-c format-docs format-check format-check-c format-check-docs clean install
+
+all: help
+
+### ================================
+### HELP & DOCUMENTATION
+### ================================
+help:
+	cmd() { printf "    \033[36mmake %-20s\033[0m %s\n" "$$1" "$$2"; }; \
+	sec() { printf "\n  \033[1;33m%s\033[0m\n" "$$1"; }; \
+	sub() { printf "  \033[1;34m  ── %s ──\033[0m\n" "$$1"; }; \
+	printf "\n  \033[1;37mCore POSIX — Suíte de Utilitários em C99 / POSIX\033[0m\n"; \
+	printf "  ============================================================\n"; \
+	sec "Compilação & Build:"; \
+	cmd "build"          "Compila todos os utilitários (rtdo, rtgo)"; \
+	cmd "debug"          "Compila em modo debug com símbolos (-g)"; \
+	cmd "install"        "Instala os binários compilados no sistema"; \
+	sec "Qualidade & Testes:"; \
+	cmd "check"          "Executa testes unitários e valida formatação"; \
+	cmd "format"         "Formata códigos C (clang-format) e docs (prettier)"; \
+	cmd "format-check"   "Verifica se a formatação está em conformidade"; \
+	sec "Limpeza:"; \
+	cmd "clean"          "Remove artefatos compilados em todos os subdiretórios"; \
+	echo ""
+
+build:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir all; \
 	done
