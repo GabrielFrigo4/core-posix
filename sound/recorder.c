@@ -6,14 +6,16 @@
 
 static atomic_bool keep_recording = true;
 
-static void *wait_for_enter(void *arg) {
+static void *wait_for_enter(void *arg)
+{
 	(void)arg;
 	getchar();
 	atomic_store(&keep_recording, false);
 	return NULL;
 }
 
-static void update_wav_sizes(FILE *file, uint32_t pcm_bytes) {
+static void update_wav_sizes(FILE *file, uint32_t pcm_bytes)
+{
 	uint32_t riff_size = pcm_bytes + sizeof(WavHeader) - 8;
 	fseek(file, 4, SEEK_SET);
 	fwrite(&riff_size, sizeof(uint32_t), 1, file);
@@ -21,13 +23,16 @@ static void update_wav_sizes(FILE *file, uint32_t pcm_bytes) {
 	fwrite(&pcm_bytes, sizeof(uint32_t), 1, file);
 }
 
-static uint32_t capture_stream(int dsp_fd, FILE *file) {
+static uint32_t capture_stream(int dsp_fd, FILE *file)
+{
 	uint8_t buffer[AUDIO_BUFFER_SIZE];
 	uint32_t total_bytes = 0;
 
-	while (atomic_load(&keep_recording)) {
+	while (atomic_load(&keep_recording))
+	{
 		ssize_t bytes_read = read(dsp_fd, buffer, sizeof(buffer));
-		if (bytes_read <= 0) {
+		if (bytes_read <= 0)
+		{
 			break;
 		}
 		fwrite(buffer, 1, bytes_read, file);
@@ -37,7 +42,8 @@ static uint32_t capture_stream(int dsp_fd, FILE *file) {
 	return total_bytes;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	const char *filename = (argc > 1) ? argv[1] : "gravacao.wav";
 	const char *device = (argc > 2) ? argv[2] : DEFAULT_DSP_DEVICE;
 
@@ -46,13 +52,15 @@ int main(int argc, char **argv) {
 	const uint16_t bits = 16;
 
 	int dsp_fd = oss_open_device(device, O_RDONLY, AFMT_S16_LE, channels, sample_rate);
-	if (dsp_fd < 0) {
+	if (dsp_fd < 0)
+	{
 		perror("oss_open_device");
 		return EXIT_FAILURE;
 	}
 
 	FILE *wav_file = fopen(filename, "wb+");
-	if (!wav_file) {
+	if (!wav_file)
+	{
 		perror("fopen");
 		close(dsp_fd);
 		return EXIT_FAILURE;
