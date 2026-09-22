@@ -1,0 +1,67 @@
+.TH OSS-AUDIO 1 "September 2026" "FreeBSD Sound System" "User Commands"
+.SH NAME
+recorder, player \- lightweight FreeBSD OSS audio capture and playback utilities
+.SH SYNOPSIS
+.B recorder
+[\fIoutput.wav\fR]
+[\fI/dev/dspN\fR]
+.br
+.B player
+\fIinput.wav\fR
+[\fI/dev/dspN\fR]
+.SH DESCRIPTION
+The
+.B oss-audio
+suite provides low-overhead, dependency-free audio tools designed to interface directly with the Open Sound System (OSS) API on FreeBSD via
+.BR sound (4).
+.PP
+.B recorder
+captures raw PCM audio from the specified audio recording device, encapsulates the stream into a valid canonical 44-byte RIFF/WAVE header, and writes the output to disk. Recording continues until the
+.B ENTER
+key is pressed in the controlling terminal.
+.PP
+.B player
+reads a canonical uncompressed PCM WAVE file, configures the sound hardware to match the file's sample rate, channel count, and bit depth, and streams the PCM payload to the specified audio playback device.
+.SH OPTIONS
+.TP
+.I output.wav
+Path to the destination WAV file (defaults to \fIgravacao.wav\fR if unspecified).
+.TP
+.I input.wav
+Path to the input WAV file to be played. The file must be uncompressed linear PCM (Format 1).
+.TP
+.I /dev/dspN
+Path to the sound device node. If omitted,
+.I /dev/dsp
+is used by default.
+.SH AUDIO ARCHITECTURE
+Unlike userland audio daemons, these utilities communicate directly with kernel sound drivers through POSIX
+.BR open (2),
+.BR read (2),
+.BR write (2),
+and OSS
+.BR ioctl (2)
+requests:
+.IP \(bu 2
+.B Direct Kernel Streaming:
+Audio playback synchronization is governed by hardware DMA buffer flow. Calling \fBwrite\fR(2) on a sound descriptor blocks automatically according to the DAC's consumption rate.
+.IP \(bu 2
+.B Virtual Channels (VCHANs):
+Concurrent execution of multiple player instances is supported natively by the kernel's automatic device cloning architecture (\fIdev.pcm.X.play.vchans\fR).
+.IP \(bu 2
+.B Canonical RIFF Encapsulation:
+Recordings are structured with strict byte alignment, avoiding non-standard metadata extensions and ensuring universal compatibility across platforms.
+.SH EXIT STATUS
+.TP
+.B 0
+Successful capture or playback completion.
+.TP
+.B 1
+Device configuration error, unsupported audio format, or I/O failure.
+.SH SEE ALSO
+.BR sound (4),
+.BR dsp (4),
+.BR mixer (8),
+.BR sysctl (8)
+.SH AUTHORS
+Gabriel Frigo <gabriel.frigo4@gmail.com>
