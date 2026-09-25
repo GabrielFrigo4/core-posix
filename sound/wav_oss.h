@@ -34,19 +34,21 @@ typedef struct
 static inline WavHeader wav_header_init(uint32_t sample_rate, uint16_t channels, uint16_t bits)
 {
 	uint16_t bytes_per_sample = bits / 8;
-	return (WavHeader){.riff_id = {'R', 'I', 'F', 'F'},
-	                   .riff_size = 0,
-	                   .wave_id = {'W', 'A', 'V', 'E'},
-	                   .fmt_id = {'f', 'm', 't', ' '},
-	                   .fmt_size = 16,
-	                   .audio_format = 1,
-	                   .num_channels = channels,
-	                   .sample_rate = sample_rate,
-	                   .byte_rate = sample_rate * channels * bytes_per_sample,
-	                   .block_align = channels * bytes_per_sample,
-	                   .bits_per_sample = bits,
-	                   .data_id = {'d', 'a', 't', 'a'},
-	                   .data_size = 0};
+	return (WavHeader){
+	    .riff_id = {'R', 'I', 'F', 'F'},
+	    .riff_size = 0,
+	    .wave_id = {'W', 'A', 'V', 'E'},
+	    .fmt_id = {'f', 'm', 't', ' '},
+	    .fmt_size = 16,
+	    .audio_format = 1,
+	    .num_channels = channels,
+	    .sample_rate = sample_rate,
+	    .byte_rate = sample_rate * channels * bytes_per_sample,
+	    .block_align = channels * bytes_per_sample,
+	    .bits_per_sample = bits,
+	    .data_id = {'d', 'a', 't', 'a'},
+	    .data_size = 0,
+	};
 }
 
 static inline int oss_open_device(
