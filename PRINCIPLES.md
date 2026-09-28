@@ -10,7 +10,7 @@ O repositório **Core POSIX** reúne implementações minimalistas, auditáveis 
 
 ---
 
-## 🏛️ Os 18 Princípios de Design (17 Princípios UNIX + Soberania do Usuário)
+## 🏛️ Os 22 Princípios de Design (17 Princípios UNIX + 5 Regras Soberanas)
 
 ### 1. Regra da Modularidade (_Rule of Modularity_)
 
@@ -121,6 +121,31 @@ O repositório **Core POSIX** reúne implementações minimalistas, auditáveis 
 > _Honre a escolha explícita e deliberada do usuário antes de impor padrões genéricos._
 
 - O administrador da máquina escolhe explicitamente os membros do grupo `wheel` autorizados a elevar privilégios.
+
+### 19. Regra da Autonomia Reentrante (_Rule of Reentrant Autonomy & Opportunistic Synergy_)
+
+> _Projete cada módulo para ser 100% autossuficiente e tolerante ao isolamento; conecte-o de forma silenciosa e oportuna quando seus pares estiverem presentes._
+
+- Os utilitários C99 compilam e executam de forma totalmente autônoma sem requerer outros hubs; Makefiles e scripts detectam compiladores C (`cc`, `clang`, `gcc`) silenciosamente e sem falhas de runtime.
+
+### 20. Regra do Hermetismo de Produção & Autonomia Soberana (_Rule of Production Hermeticity_)
+
+> _O software é construído para humanos e sistemas operacionais; a inteligência artificial é exclusivamente uma copiloto sob demanda. Nenhum código de produção deve depender de ferramentas de IA._
+
+- **A Invariante do Teste de Fogo (`rm -rf .agents`):** Se a pasta `.agents/` for deletada, 100% dos utilitários C (`rtdo`, `rtgo`), Makefiles e quality gates continuam compilando e funcionando com perfeição.
+- **Zero Acoplamento de IA em Produção:** Nenhum código C, Makefile ou script de sistema referencia arquivos em `.agents/` ou skills.
+
+### 21. Regra do Desacoplamento Dev-Hub vs. Runtime de Produção (_Rule of Production Sovereign Isolation_)
+
+> _A bancada de ferramentas do artesão não deve ser soldada ao produto final; desenvolva no repositório, execute nos caminhos canônicos do sistema._
+
+- O repositório opera como bancada independente. Binários de compilação intermediários e testes ficam isolados localmente sem poluir o sistema antes da instalação deliberada em `/usr/local/bin` ou caminhos XDG.
+
+### 22. Regra da Antifragilidade & Resiliência Ativa (_Rule of Antifragility & Active Self-Healing_)
+
+> _O que é frágil quebra com falhas de permissão ou desordem; o que é antifrágil auto-cura, valida descritores e previne escalonamento indevido com segurança comprovada._
+
+- Utilitários validam grupos, permissões e descritores defensivamente; previnem vazamento de variáveis sensíveis e auto-curam ambientes de execução com diagnósticos precisos em `stderr`.
 
 ---
 
