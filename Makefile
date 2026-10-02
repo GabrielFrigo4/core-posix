@@ -9,7 +9,7 @@ MAKEFLAGS += --no-print-directory -s
 
 SUBDIRS = rtdo rtgo
 
-.PHONY: all help build debug check format format-c format-docs format-check format-check-c format-check-docs clean install
+.PHONY: all help build debug check format clang-format prettier format-c format-docs format-check format-check-c format-check-docs clean install
 
 all: help
 
@@ -17,10 +17,11 @@ all: help
 ### HELP & DOCUMENTATION
 ### ================================
 help:
-	cmd() { printf "    \033[36mmake %-20s\033[0m %s\n" "$$1" "$$2"; }; \
-	sec() { printf "\n  \033[1;33m%s\033[0m\n" "$$1"; }; \
-	sub() { printf "  \033[1;34m  ── %s ──\033[0m\n" "$$1"; }; \
-	printf "\n  \033[1;37mCore POSIX — Suíte de Utilitários em C99 / POSIX\033[0m\n"; \
+	_e=$$'\e'; \
+	cmd() { printf "    $${_e}[36mmake %-20s$${_e}[0m %s\n" "$$1" "$$2"; }; \
+	sec() { printf "\n  $${_e}[1;33m%s$${_e}[0m\n" "$$1"; }; \
+	sub() { printf "  $${_e}[1;34m  ── %s ──$${_e}[0m\n" "$$1"; }; \
+	printf "\n  $${_e}[1;37mCore POSIX — Suíte de Utilitários em C99 / POSIX$${_e}[0m\n"; \
 	printf "  ============================================================\n"; \
 	sec "Compilação & Build:"; \
 	cmd "build"          "Compila todos os utilitários (rtdo, rtgo)"; \
@@ -29,6 +30,8 @@ help:
 	sec "Qualidade & Testes:"; \
 	cmd "check"          "Executa testes unitários e valida formatação"; \
 	cmd "format"         "Formata códigos C (clang-format) e docs (prettier)"; \
+	cmd "clang-format"   "Formata arquivos C/Header com clang-format"; \
+	cmd "prettier"       "Formata documentações e configs com Prettier"; \
 	cmd "format-check"   "Verifica se a formatação está em conformidade"; \
 	sec "Limpeza:"; \
 	cmd "clean"          "Remove artefatos compilados em todos os subdiretórios"; \
@@ -51,6 +54,9 @@ check:
 	$(MAKE) format-check
 
 format: format-c format-docs
+
+clang-format: format-c
+prettier: format-docs
 
 format-c:
 	find . -type f \( -name "*.c" -o -name "*.h" \) -not -path "*/.*" -exec clang-format -i {} +
@@ -80,4 +86,4 @@ install:
 		$(MAKE) -C $$dir install; \
 	done
 
-.PHONY: all debug check format format-c format-docs format-check format-check-c format-check-docs clean install
+.PHONY: all debug check format clang-format prettier format-c format-docs format-check format-check-c format-check-docs clean install
