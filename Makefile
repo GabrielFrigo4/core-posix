@@ -63,7 +63,7 @@ format-c:
 
 format-docs:
 	if command -v prettier > "/dev/null" 2>&1; then \
-		prettier --write "**/*.{md,yaml,yml,json}" 2> "/dev/null" || true; \
+		prettier --write "**/*.{md,json,jsonc,yml,yaml,html,css}" 2> "/dev/null" || true; \
 	fi
 
 format-check: format-check-c format-check-docs
@@ -73,7 +73,7 @@ format-check-c:
 
 format-check-docs:
 	if command -v prettier > "/dev/null" 2>&1; then \
-		prettier --check "**/*.{md,yaml,yml,json}"; \
+		prettier --check "**/*.{md,json,jsonc,yml,yaml,html,css}"; \
 	fi
 
 clean:
