@@ -37,6 +37,9 @@ help:
 	cmd "clean"          "Remove artefatos compilados em todos os subdiretórios"; \
 	echo ""
 
+### ================================
+### BUILD & COMPILATION
+### ================================
 build:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir all; \
@@ -47,6 +50,9 @@ debug:
 		$(MAKE) -C $$dir debug; \
 	done
 
+### ================================
+### QUALITY & FORMATTING
+### ================================
 check:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir check; \
@@ -76,6 +82,9 @@ format-check-docs:
 		prettier --check "**/*.{md,json,jsonc,yml,yaml,html,css}"; \
 	fi
 
+### ================================
+### CLEANUP & INSTALLATION
+### ================================
 clean:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
