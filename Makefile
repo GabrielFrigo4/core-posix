@@ -89,6 +89,8 @@ clean:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
+	rm -rf .venv
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2> "/dev/null" || true
 
 install:
 	for dir in $(SUBDIRS); do \
