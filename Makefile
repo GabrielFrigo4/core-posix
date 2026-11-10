@@ -42,12 +42,12 @@ help:
 ### ================================
 build:
 	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir all; \
+		(cd "$$dir" && $(MAKE) all); \
 	done
 
 debug:
 	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir debug; \
+		(cd "$$dir" && $(MAKE) debug); \
 	done
 
 ### ================================
@@ -55,7 +55,7 @@ debug:
 ### ================================
 check:
 	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir check; \
+		(cd "$$dir" && $(MAKE) check); \
 	done
 	$(MAKE) format-check
 
@@ -69,7 +69,11 @@ format-c:
 
 format-docs:
 	if command -v prettier > "/dev/null" 2>&1; then \
-		prettier --write "**/*.{md,json,jsonc,yml,yaml,html,css}" 2> "/dev/null" || true; \
+		find . -type f \( -name "*.md" -o -name "*.json" -o -name "*.jsonc" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" -o -name "*.css" \) \
+			-not -path "*/OSS/*" -not -path "*/.git/*" -not -path "*/.venv/*" -not -path "*/node_modules/*" \
+			-not -path "*/var/*" -not -path "*/tmp/*" -not -path "*/build/*" -not -path "*/dist/*" \
+			-not -path "*/target/*" -not -path "*/.cache/*" \
+			-exec prettier --write {} + 2> "/dev/null" || true; \
 	fi
 
 format-check: format-check-c format-check-docs
@@ -79,7 +83,11 @@ format-check-c:
 
 format-check-docs:
 	if command -v prettier > "/dev/null" 2>&1; then \
-		prettier --check "**/*.{md,json,jsonc,yml,yaml,html,css}"; \
+		find . -type f \( -name "*.md" -o -name "*.json" -o -name "*.jsonc" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" -o -name "*.css" \) \
+			-not -path "*/OSS/*" -not -path "*/.git/*" -not -path "*/.venv/*" -not -path "*/node_modules/*" \
+			-not -path "*/var/*" -not -path "*/tmp/*" -not -path "*/build/*" -not -path "*/dist/*" \
+			-not -path "*/target/*" -not -path "*/.cache/*" \
+			-exec prettier --check {} +; \
 	fi
 
 ### ================================
@@ -87,14 +95,12 @@ format-check-docs:
 ### ================================
 clean:
 	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir clean; \
+		(cd "$$dir" && $(MAKE) clean); \
 	done
 	rm -rf .venv
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2> "/dev/null" || true
 
 install:
 	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir install; \
+		(cd "$$dir" && $(MAKE) install); \
 	done
-
-.PHONY: all debug check format clang-format prettier format-c format-docs format-check format-check-c format-check-docs clean install
