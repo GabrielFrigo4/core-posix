@@ -162,7 +162,7 @@ fi
 ### --------------------------------
 _bad_octal=$(git diff --cached -S'\033' --name-only 2> "/dev/null" | grep -E '(\.sh$|Makefile$|\.py$)' || true)
 if [ -n "${_bad_octal}" ]; then
-	echo "❌ [pre-commit] Escape octal (\\033) detectado em: ${_bad_octal}. Use \$'\\e' ou \\x1b." >&2
+	printf '%s\n' "❌ [pre-commit] Escape octal (\\033) detectado em: ${_bad_octal}. Use \$'\\e' ou \\x1b." >&2
 	exit 1
 fi
 
