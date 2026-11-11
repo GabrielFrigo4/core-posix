@@ -69,11 +69,15 @@ flowchart TD
 
 ### Compilação Padrão
 
-```bash
-# Compilar todos os utilitários da suíte
-make all
+Compilar todos os utilitários da suíte:
 
-# Compilar com sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer)
+```bash
+make all
+```
+
+Compilar com sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer):
+
+```bash
 CC=clang make debug
 ```
 
@@ -98,7 +102,7 @@ Para que os scripts funcionem e o Git os execute, é necessário conceder permis
 Conceda permissão de execução ao instalador e execute-o (ele ajustará as permissões dos hooks e registrará o caminho no Git automaticamente):
 
 ```bash
-chmod +x .githooks/install.sh
+chmod 0755 .githooks/install.sh
 ./.githooks/install.sh
 ```
 
@@ -111,7 +115,6 @@ Caso prefira configurar manualmente sem o script instalador:
 
     ```bash
     chmod 0755 .githooks/*
-    # ou: chmod +x .githooks/pre-commit
     ```
 
 2. **Ativação no Git:**
@@ -123,13 +126,15 @@ Caso prefira configurar manualmente sem o script instalador:
 
 ### Verificação Manual dos Gates
 
-Para testar o script de pre-commit diretamente ou rodar a suíte completa de checagens:
+Para testar o script de pre-commit diretamente:
 
 ```bash
-# Executar o gancho de pre-commit diretamente
 ./.githooks/pre-commit
+```
 
-# Ou executar a validação completa via Makefile
+Para executar a validação completa via Makefile:
+
+```bash
 make check
 ```
 
@@ -140,7 +145,6 @@ make check
 - 🏛️ [**ARCHITECTURE.md**](docs/ARCHITECTURE.md): Análise técnica do fluxo de privilégios, restrições e TTY.
 - 🔐 [**SECURITY.md**](docs/SECURITY.md): Modelo de ameaças, mitigação de escalonamento e checklist.
 - 🤖 [**AGENTS.md**](AGENTS.md): Diretrizes para agentes autônomos de IA trabalhando neste repositório.
-- 🌐 [**ENVIRONMENT.md**](ENVIRONMENT.md): Requisitos de SO e matriz de compatibilidade.
 
 ---
 
